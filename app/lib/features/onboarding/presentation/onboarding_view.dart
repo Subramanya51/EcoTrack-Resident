@@ -16,19 +16,22 @@ class _OnboardingViewState extends State<OnboardingView> {
   final List<OnboardingSlide> _slides = [
     const OnboardingSlide(
       title: "Schedule By Date",
-      description: "Select your preferred date for waste collection. The municipality collector will arrive during the fixed window.",
+      description:
+          "Select your preferred date for waste collection. The municipality collector will arrive during the fixed window.",
       icon: Icons.home_work,
       accentColorIsPrimary: true, // Marker for dynamic primary color
     ),
     const OnboardingSlide(
       title: "Live Updates",
-      description: "Track proximity with real-time text alerts—no maps needed. Intuitive digital forest awareness.",
+      description:
+          "Track proximity with real-time text alerts—no maps needed. Intuitive digital forest awareness.",
       icon: Icons.sensors,
       accentColorIsPrimary: true,
     ),
     const OnboardingSlide(
       title: "Earn EcoPoints",
-      description: "Get rewarded for responsible disposal and climb the tiers. Your impact, gamified.",
+      description:
+          "Get rewarded for responsible disposal and climb the tiers. Your impact, gamified.",
       icon: Icons.military_tech,
       accentColor: Colors.amberAccent,
     ),
@@ -53,7 +56,7 @@ class _OnboardingViewState extends State<OnboardingView> {
               ),
             ),
           ),
-          
+
           PageView.builder(
             controller: _pageController,
             itemCount: _slides.length,
@@ -65,7 +68,7 @@ class _OnboardingViewState extends State<OnboardingView> {
               return _OnboardingSlideWidget(slide: _slides[index]);
             },
           ),
-          
+
           // Pagination and Actions
           Positioned(
             bottom: 60,
@@ -83,19 +86,26 @@ class _OnboardingViewState extends State<OnboardingView> {
                       height: 8,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
-                        color: _currentPage == index ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                        color: _currentPage == index
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     );
                   }),
                 ),
                 const SizedBox(height: 48),
-                
+
                 if (_currentPage == _slides.length - 1)
                   ElevatedButton(
                     onPressed: () {
                       AppHaptics.mediumImpact();
-                      Navigator.pushReplacementNamed(context, '/location-permission');
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/location-permission',
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 64),
@@ -109,7 +119,10 @@ class _OnboardingViewState extends State<OnboardingView> {
                       TextButton(
                         onPressed: () {
                           AppHaptics.lightImpact();
-                          Navigator.pushReplacementNamed(context, '/location-permission');
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/location-permission',
+                          );
                         },
                         child: Text(
                           "SKIP",
@@ -117,7 +130,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 2,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -129,7 +144,10 @@ class _OnboardingViewState extends State<OnboardingView> {
                             curve: Curves.easeOutCubic,
                           );
                         },
-                        icon: Icon(Icons.arrow_forward, color: Theme.of(context).colorScheme.primary),
+                        icon: Icon(
+                          Icons.arrow_forward,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         iconSize: 32,
                       ),
                     ],
@@ -167,7 +185,9 @@ class _OnboardingSlideWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final color = slide.accentColorIsPrimary ? cs.primary : (slide.accentColor ?? cs.primary);
+    final color = slide.accentColorIsPrimary
+        ? cs.primary
+        : (slide.accentColor ?? cs.primary);
 
     return Padding(
       padding: const EdgeInsets.all(40),
@@ -189,11 +209,7 @@ class _OnboardingSlideWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              slide.icon,
-              size: 100,
-              color: color,
-            ),
+            child: Icon(slide.icon, size: 100, color: color),
           ),
           const SizedBox(height: 60),
           Text(

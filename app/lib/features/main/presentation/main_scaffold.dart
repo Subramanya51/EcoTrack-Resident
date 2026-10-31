@@ -9,21 +9,30 @@ import '../../dashboard/presentation/dashboard_view.dart';
 import '../../schedule/presentation/schedule_view.dart';
 import '../../rewards/presentation/rewards_view.dart';
 import '../../profile/presentation/profile_view.dart';
+import '../../schedule/data/pickup_provider.dart';
 import '../../../shared/widgets/pill_nav_bar.dart';
 
 // Navigation State Provider (Legacy API)
 final navigationProvider = StateProvider<int>((ref) => 0);
 
-// Global Key to maintain RotatingLogo state across page switches
-final rotatingLogoKey = GlobalKey();
-
-class MainScaffold extends ConsumerWidget {
+class MainScaffold extends ConsumerStatefulWidget {
   const MainScaffold({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
+  // Global Key to maintain RotatingLogo state across page switches
+  // Moving this into the State class fixes the "Multiple widgets used the same GlobalKey" error
+  // occurring during theme transitions (ThemeTransitionWrapper builds the tree twice).
+  final rotatingLogoKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
     final selectedIndex = ref.watch(navigationProvider);
     final cs = Theme.of(context).colorScheme;
+    final isPickupActive = ref.watch(pickupActiveProvider);
 
     final List<Widget> pages = [
       const DashboardView(),
@@ -37,7 +46,7 @@ class MainScaffold extends ConsumerWidget {
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 80), // Space for PillNavigationBar
+            padding: EdgeInsets.only(bottom: isPickupActive ? 0 : 80), // Hide space for PillNavigationBar if active
             child: IndexedStack(
               index: selectedIndex,
               children: pages,
@@ -66,27 +75,28 @@ class MainScaffold extends ConsumerWidget {
               ),
             ),
             
-          // New Pill Navigation Bar
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: PillNavigationBar(
-              logoKey: rotatingLogoKey,
-              currentIndex: selectedIndex,
-              onLogoTap: () {
-                // Cycle through 0 -> 1 -> 2 -> 3 -> 0
-                final nextIndex = (selectedIndex + 1) % 4;
-                ref.read(navigationProvider.notifier).state = nextIndex;
-              },
-              items: const [
-                PillNavItemData(label: "HOME", icon: Icons.home_max),
-                PillNavItemData(label: "REQUESTS", icon: Icons.calendar_today),
-                PillNavItemData(label: "REWARDS", icon: Icons.military_tech),
-                PillNavItemData(label: "PROFILE", icon: Icons.person),
-              ],
+          // New Pill Navigation Bar - Hidden when pickup is active
+          if (!isPickupActive)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: PillNavigationBar(
+                logoKey: rotatingLogoKey,
+                currentIndex: selectedIndex,
+                onLogoTap: () {
+                  // Cycle through 0 -> 1 -> 2 -> 3 -> 0
+                  final nextIndex = (selectedIndex + 1) % 4;
+                  ref.read(navigationProvider.notifier).state = nextIndex;
+                },
+                items: const [
+                  PillNavItemData(label: "HOME", icon: Icons.home_max),
+                  PillNavItemData(label: "REQUESTS", icon: Icons.calendar_today),
+                  PillNavItemData(label: "REWARDS", icon: Icons.military_tech),
+                  PillNavItemData(label: "PROFILE", icon: Icons.person),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

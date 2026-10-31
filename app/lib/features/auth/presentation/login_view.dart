@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:app/services/auth_service.dart';
 import '../../../core/haptics.dart';
 import '../../../shared/widgets/custom_text_field.dart';
 import '../../../shared/widgets/ghost_button.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +28,24 @@ class LoginView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 20),
+              
+              Center(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/logo.jpg'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 40),
-              // Header
+
               Text(
                 "WELCOME BACK",
                 style: GoogleFonts.spaceGrotesk(
@@ -29,95 +56,81 @@ class LoginView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
+
               Text(
                 "Sign in to your\nResident Portal",
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  height: 1.1,
-                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
+
               const SizedBox(height: 48),
-              
-              // Forms
-              const CustomTextField(
-                label: "Email Address",
-                hint: "resident@lumina.eco",
-                prefixIcon: Icons.alternate_email,
-                keyboardType: TextInputType.emailAddress,
+
+              CustomTextField(
+                label: "Username",
+                hint: "Enter your username",
+                prefixIcon: Icons.person_outline,
+                controller: userNameController,
               ),
+
               const SizedBox(height: 24),
-              const CustomTextField(
+
+              CustomTextField(
                 label: "Password",
-                hint: "••••••••",
+                hint: "Enter your password",
                 obscureText: true,
                 prefixIcon: Icons.lock_outline,
+                controller: passwordController,
               ),
-              const SizedBox(height: 12),
-              
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    AppHaptics.lightImpact();
-                  },
-                  child: Text(
-                    "Forgot Password?",
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
+
               const SizedBox(height: 40),
-              
-              // Actions
+
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   AppHaptics.mediumImpact();
-                  Navigator.pushReplacementNamed(context, '/home');
+
+                  setState(() => isLoading = true);
+
+                  final response = await AuthService.loginUser(
+                    userName: userNameController.text.trim(),
+                    password: passwordController.text.trim(),
+                  );
+
+                  setState(() => isLoading = false);
+
+                  if (response["success"]) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Login Successful")),
+                    );
+
+                    Navigator.pushReplacementNamed(
+                      context,
+                      '/home',
+                      arguments: userNameController.text.trim(),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response["message"])),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 64),
                 ),
-                child: const Text("ACCESS SYSTEM"),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("ACCESS SYSTEM"),
               ),
+
               const SizedBox(height: 24),
+
               GhostButton(
                 text: "CREATE ACCOUNT",
                 fullWidth: true,
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');
                 },
-              ),
-              
-              const SizedBox(height: 48),
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      "POWERED BY",
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "LUMINA ECO-TECH",
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),

@@ -26,4 +26,10 @@ class AppHaptics {
       HapticFeedback.mediumImpact();
     }
   }
+
+  static void heavyImpact() {
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      HapticFeedback.heavyImpact();
+    }
+  }
 }

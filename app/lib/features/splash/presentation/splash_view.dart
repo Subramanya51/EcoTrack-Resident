@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import '../../../services/auth_service.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -13,10 +14,31 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
-      // Navigate to Onboarding for fresh feel
+    _handleStartUp();
+  }
+
+  Future<void> _handleStartUp() async {
+    // Wait for the animation/branding to show
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (!mounted) return;
+
+    // Check if session is valid
+    final bool isSessionValid = await AuthService.isSessionValid();
+
+    if (isSessionValid) {
+      // Get username from token if possible
+      final username = await AuthService.getUsernameFromToken();
+      
+      Navigator.pushReplacementNamed(
+        context, 
+        '/home', 
+        arguments: username ?? "User",
+      );
+    } else {
+      // Navigate to Onboarding for fresh feel or if session expired
       Navigator.pushReplacementNamed(context, '/onboarding');
-    });
+    }
   }
 
   @override
@@ -44,11 +66,11 @@ class _SplashViewState extends State<SplashView> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 120,
+                  height: 120,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
                         color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
@@ -56,26 +78,25 @@ class _SplashViewState extends State<SplashView> {
                         spreadRadius: 5,
                       ),
                     ],
-                  ),
-                  child: Icon(
-                    Icons.eco,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 48,
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/logo.jpg'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 Text(
-                  "ECOTRACK",
+                  "ECO CONNECT",
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 8,
+                    letterSpacing: 4,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "SUSATAINABILITY HUB",
+                  "SUSTAINABILITY HUB",
                   style: GoogleFonts.spaceGrotesk(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,

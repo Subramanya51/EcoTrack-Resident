@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/haptics.dart';
 import '../../../shared/widgets/custom_text_field.dart';
-
+import 'package:app/services/auth_service.dart';
 
 class RegistrationView extends StatefulWidget {
   const RegistrationView({super.key});
@@ -114,24 +114,25 @@ class _RegistrationViewState extends State<RegistrationView> {
 
                   setState(() => isLoading = true);
 
-                  await Future.delayed(const Duration(seconds: 2));
-                  String result = "SUCCESS";
+                  final response = await AuthService.registerUser(
+                    userName: userNameController.text.trim(),
+                    password: passwordController.text.trim(),
+                    phoneNumber: phoneController.text.trim(),
+                    address: addressController.text.trim(),
+                    role: "ROLE_RESIDENT",
+                  );
 
                   setState(() => isLoading = false);
 
-                  if (result == "SUCCESS") {
+                  if (response["success"]) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Registration Successful")),
                     );
 
-                    Navigator.pop(context); // back to login
-                  } else if (result == "FORBIDDEN") {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("User already exists")),
-                    );
+                    Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Something went wrong")),
+                      SnackBar(content: Text(response["message"])),
                     );
                   }
                 },

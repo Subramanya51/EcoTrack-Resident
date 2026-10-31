@@ -159,10 +159,11 @@ class _RotatingLogoState extends State<_RotatingLogo> with TickerProviderStateMi
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.eco,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  size: 24,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.jpg',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),

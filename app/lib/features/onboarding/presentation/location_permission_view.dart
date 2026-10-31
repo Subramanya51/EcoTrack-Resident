@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/haptics.dart';
 
 class LocationPermissionView extends StatefulWidget {
@@ -9,7 +11,8 @@ class LocationPermissionView extends StatefulWidget {
   State<LocationPermissionView> createState() => _LocationPermissionViewState();
 }
 
-class _LocationPermissionViewState extends State<LocationPermissionView> with SingleTickerProviderStateMixin {
+class _LocationPermissionViewState extends State<LocationPermissionView>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -32,6 +35,27 @@ class _LocationPermissionViewState extends State<LocationPermissionView> with Si
     super.dispose();
   }
 
+  // ✅ REAL LOCATION FUNCTION
+  Future<Position?> getUserLocation() async {
+    var status = await Permission.location.request();
+
+    if (status.isDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Location permission denied")),
+      );
+      return null;
+    }
+
+    if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      return null;
+    }
+
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -40,7 +64,6 @@ class _LocationPermissionViewState extends State<LocationPermissionView> with Si
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // Background Glows
           Positioned(
             top: -50,
             left: -50,
@@ -53,20 +76,18 @@ class _LocationPermissionViewState extends State<LocationPermissionView> with Si
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
               child: Column(
                 children: [
                   const Spacer(),
-                  
-                  // Hero Pin Illustration
+
                   Center(
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // Ripple rings
                         ScaleTransition(
                           scale: _pulseAnimation,
                           child: Container(
@@ -84,13 +105,6 @@ class _LocationPermissionViewState extends State<LocationPermissionView> with Si
                           decoration: BoxDecoration(
                             color: cs.primary,
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: cs.primary.withOpacity(0.3),
-                                blurRadius: 40,
-                                spreadRadius: 10,
-                              ),
-                            ],
                           ),
                           child: Icon(
                             Icons.location_on,
@@ -101,43 +115,50 @@ class _LocationPermissionViewState extends State<LocationPermissionView> with Si
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 60),
-                  
+
                   Text(
                     "ALLOW LOCATION ACCESS",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.spaceGrotesk(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      height: 1.1,
-                      color: cs.onSurface,
                     ),
                   ),
+
                   const SizedBox(height: 16),
+
                   Text(
                     "We use your location to match you with the nearest collector and send accurate proximity alerts.",
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      height: 1.6,
-                      color: cs.onSurfaceVariant,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 16),
                   ),
-                  
+
                   const Spacer(),
-                  
+
+                  // ✅ UPDATED BUTTON
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       AppHaptics.mediumImpact();
-                      Navigator.pushReplacementNamed(context, '/login');
+
+                      final position = await getUserLocation();
+
+                      if (position != null) {
+                        print("LAT: ${position.latitude}");
+                        print("LNG: ${position.longitude}");
+
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 64),
                     ),
                     child: const Text("ALLOW LOCATION"),
                   ),
+
                   const SizedBox(height: 16),
+
                   TextButton(
                     onPressed: () {
                       AppHaptics.lightImpact();
@@ -149,20 +170,15 @@ class _LocationPermissionViewState extends State<LocationPermissionView> with Si
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,
-                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 20),
+
                   Text(
                     "SECURE 256-BIT ENCRYPTED GEO-DATA",
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 8,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      color: cs.outlineVariant.withOpacity(0.5),
-                    ),
+                    style: GoogleFonts.spaceGrotesk(fontSize: 8),
                   ),
                 ],
               ),
